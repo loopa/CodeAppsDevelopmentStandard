@@ -19,6 +19,100 @@ Geek Sales（営業支援アプリ）に生産管理機能（生産指示・在�
 - 品質課題と生産指示の紐付け（ルックアップ）
 - 自動テストの追加（このリポジトリにテスト基盤が存在しないため）
 
+### 追記（2026-07-08）: 接続先Dataverse環境にテーブルが1つも存在しないことが判明
+
+実装プラン作成時に接続先環境（`org3be00c11.crm7.dynamics.com` / kiso masaki の環境）を `pac env fetch` で直接確認したところ、`geek_` プレフィックスのパブリッシャーもテーブルも1つも存在しないことが判明した。つまり `customers.tsx` 等が参照する既存の営業管理テーブル（`geek_customer`/`geek_opportunity`/`geek_activity`/`geek_territory`/`geek_newsinsight`/`geek_incident`）はコード上は完成しているが、この環境ではまだ一度も作成されていない。
+
+ユーザーと協議の結果、**営業管理・生産管理の両方のテーブルを今回まとめて作成する**方針とした。理由: 生産管理機能だけ作っても、顧客ルックアップの参照先である `geek_customer` が無ければ動作確認できず、アプリ全体が実際に機能する状態にならないため。
+
+このため、上記スコープを以下の通り拡張する。
+
+**追加スコープ:**
+- 新規パブリッシャー（プレフィックス `geek`）と新規ソリューションを Dataverse に作成する
+- 生産管理3テーブルに加え、既存コードが前提とする営業管理6テーブル（顧客・商談・活動履歴・テリトリー・ニュースインサイト・インシデント）も新規作成する
+- 各テーブルのフィールド定義は既存の `src/types/dataverse.ts`・`src/types/incident.ts` の型定義から逆算する（コードは変更しない。テーブル側をコードに合わせる）
+
+**スコープ外（変更なし）:** 既存の営業管理ページ（`customers.tsx` 等）のコード変更、品質課題と生産指示の紐付け、自動テスト追加。
+
+#### 営業管理6テーブルの定義（コードから逆算）
+
+**geek_customer**（主キー表示名: geek_name）
+| フィールド | 型 |
+|---|---|
+| geek_industry | 選択肢（IndustryOptions: 製造/IT/商社/小売/金融/その他） |
+| geek_contactperson | テキスト |
+| geek_email | テキスト(Email) |
+| geek_phone | テキスト |
+| geek_address | テキスト |
+| geek_notes | 複数行テキスト |
+
+**geek_opportunity**（主キー表示名: geek_name）
+| フィールド | 型 |
+|---|---|
+| geek_stage | 選択肢（StageOptions: リード/提案/見積/交渉/受注/失注/キャンセル） |
+| geek_amount | 通貨 |
+| geek_probability | 整数 |
+| geek_expectedclosedate | 日付 |
+| geek_description | 複数行テキスト |
+| geek_aiinsights | 複数行テキスト |
+| _geek_customerid_value | ルックアップ → geek_customer |
+
+**geek_activity**（主キー表示名: geek_name）
+| フィールド | 型 |
+|---|---|
+| geek_type | 選択肢（ActivityTypeOptions: 訪問/電話/メール/オンライン会議/その他） |
+| geek_activitydate | 日付 |
+| geek_content | 複数行テキスト |
+| geek_nextaction | 複数行テキスト |
+| _geek_customerid_value | ルックアップ → geek_customer |
+| _geek_opportunityid_value | ルックアップ → geek_opportunity |
+
+**geek_territory**（主キー表示名: geek_name）
+| フィールド | 型 |
+|---|---|
+| geek_budget | 通貨（geek_budget_baseは通貨列の自動生成フィールドのため作成不要） |
+| geek_fiscalyear | 整数 |
+| geek_notes | 複数行テキスト |
+| _geek_customerid_value | ルックアップ → geek_customer |
+| （ownerid は UserOwned テーブルの自動システムフィールド） |
+
+**geek_newsinsight**（主キー表示名: geek_headline）
+| フィールド | 型 |
+|---|---|
+| geek_summary | 複数行テキスト |
+| geek_action | 複数行テキスト |
+| geek_impact | 整数 |
+| geek_category | テキスト |
+| geek_relatedcustomers | テキスト |
+| geek_generateddate | 日付 |
+
+**geek_incident**（主キー表示名: geek_title）
+| フィールド | 型 |
+|---|---|
+| geek_description | 複数行テキスト |
+| geek_status | 選択肢（新規/対応中/解決済/クローズ） |
+| geek_priority | 選択肢（低/中/高/緊急） |
+| geek_assettype | 選択肢（PC/サーバー/プリンター/ネットワーク機器/モバイルデバイス/ソフトウェア/その他） |
+| geek_assetstatus | 選択肢（稼働中/故障中/メンテナンス中/廃棄済） |
+| geek_reportedby | テキスト |
+| geek_assignedto | テキスト |
+| geek_resolvedon | 日付 |
+| geek_resolution | 複数行テキスト |
+
+#### 生産管理3テーブルの主キー表示名（訂正）
+
+先述の3テーブルの主キー（プライマリネーム属性）を明記する: `geek_productionorder` は `geek_ordernumber`、`geek_inventoryitem` は `geek_partnumber`、`geek_qualityissue` は `geek_title` を使う（いずれも `geek_name` ではない）。
+
+#### テーブル作成順序（依存関係）
+
+1. Tier 0（依存なし）: geek_customer, geek_inventoryitem, geek_qualityissue, geek_newsinsight, geek_incident
+2. Tier 1（Tier 0 に依存）: geek_opportunity（→customer）, geek_territory（→customer）, geek_productionorder（→customer）
+3. Tier 2（Tier 1 に依存）: geek_activity（→customer, →opportunity）
+
+#### 使用ツール
+
+`.github/skills/dataverse/scripts/setup_dataverse.py` テンプレートと `.github/skills/standard/scripts/auth_helper.py`（DeviceCodeCredential による Python 認証、Azure CLI 不要）を使う。この環境には PowerShell も Azure CLI も無いため、`code-apps-preview:add-dataverse` スキルの PowerShell 手順ではなく、このリポジトリ専用の Python スクリプトを使う。
+
 ## データモデル（Dataverse テーブル）
 
 ### geek_productionorder（生産指示）
