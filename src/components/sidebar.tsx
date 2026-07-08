@@ -9,6 +9,9 @@ import {
   ClipboardList,
   Target,
   AlertTriangle,
+  Factory,
+  Boxes,
+  ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -45,6 +48,14 @@ export function Sidebar() {
       items: [
         { icon: LayoutDashboard, label: "ダッシュボード", path: "dashboard" },
         { icon: Target, label: "テリトリー", path: "territory" },
+      ],
+    },
+    {
+      category: "生産管理",
+      items: [
+        { icon: Factory, label: "生産指示", path: "production-orders" },
+        { icon: Boxes, label: "在庫", path: "inventory" },
+        { icon: ShieldAlert, label: "品質課題", path: "quality" },
       ],
     },
     {
