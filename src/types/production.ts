@@ -38,6 +38,7 @@ export const ProductionOrderStatusLabels: Record<number, ProductionOrderStatus> 
 };
 
 export interface ProductionOrder {
+  [key: string]: unknown;
   id: string;
   orderNumber: string;
   productName: string;
@@ -74,6 +75,7 @@ export interface InventoryItemRecord {
 }
 
 export interface InventoryItem {
+  [key: string]: unknown;
   id: string;
   partNumber: string;
   partName: string;
@@ -122,6 +124,7 @@ export const QualityStatusLabels: Record<number, QualityStatus> = {
 };
 
 export interface QualityIssue {
+  [key: string]: unknown;
   id: string;
   title: string;
   category: QualityCategory;
