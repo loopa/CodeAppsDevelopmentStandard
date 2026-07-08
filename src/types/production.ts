@@ -83,7 +83,12 @@ export interface InventoryItem {
   minStock: number;
 }
 
-export type InventoryItemCreate = Omit<InventoryItem, "id">;
+export interface InventoryItemCreate {
+  partNumber: string;
+  partName: string;
+  stock: number;
+  minStock: number;
+}
 
 // ── 品質課題 (geek_qualityissue) ──
 export interface QualityIssueRecord {
@@ -133,4 +138,10 @@ export interface QualityIssue {
   description: string;
 }
 
-export type QualityIssueCreate = Omit<QualityIssue, "id">;
+export interface QualityIssueCreate {
+  title: string;
+  category: QualityCategory;
+  severity: QualitySeverity;
+  status: QualityStatus;
+  description: string;
+}
