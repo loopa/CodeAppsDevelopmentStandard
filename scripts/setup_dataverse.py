@@ -81,101 +81,317 @@ SOLUTION_DISPLAY_NAME = os.environ.get("SOLUTION_DISPLAY_NAME", SOLUTION_NAME)
 # ════════════════════════════════════════════════════════════════
 
 TABLES = [
-    # --- マスタテーブル（先に作成） ---
+    # ── Tier 0: 依存なし ──
     {
-        "logical": f"{PREFIX}_samplemaster",    # 論理名（英語小文字のみ）
-        "display": "Sample Master",              # 英語表示名（作成時）
-        "plural": "Sample Masters",              # 英語複数形
-        "description": "サンプルマスタテーブル",
+        "logical": f"{PREFIX}_customer",
+        "display": "Customer",
+        "plural": "Customers",
+        "description": "顧客マスタ",
         "columns": [
-            # Memo 列（複数行テキスト）
-            # {"logical": f"{PREFIX}_description", "type": "Memo", "display": "Description", "maxLength": 2000},
+            {"logical": f"{PREFIX}_industry", "type": "Picklist", "display": "Industry",
+             "options": [
+                 (100000000, "製造"), (100000001, "IT"), (100000002, "商社"),
+                 (100000003, "小売"), (100000004, "金融"), (100000005, "その他"),
+             ]},
+            {"logical": f"{PREFIX}_contactperson", "type": "String", "display": "Contact Person", "maxLength": 100},
+            {"logical": f"{PREFIX}_email", "type": "String", "display": "Email", "maxLength": 100},
+            {"logical": f"{PREFIX}_phone", "type": "String", "display": "Phone", "maxLength": 30},
+            {"logical": f"{PREFIX}_address", "type": "String", "display": "Address", "maxLength": 200},
+            {"logical": f"{PREFIX}_notes", "type": "Memo", "display": "Notes", "maxLength": 2000},
         ],
     },
-    # --- 主テーブル ---
     {
-        "logical": f"{PREFIX}_samplemain",
-        "display": "Sample Main",
-        "plural": "Sample Mains",
-        "description": "サンプルメインテーブル",
+        "logical": f"{PREFIX}_inventoryitem",
+        "display": "Inventory Item",
+        "plural": "Inventory Items",
+        "description": "在庫マスタ",
+        "primary_schema": f"{PREFIX}_partnumber",
+        "primary_display": "Part Number",
         "columns": [
-            # String 列
-            # {"logical": f"{PREFIX}_code", "type": "String", "display": "Code", "maxLength": 100},
-
-            # Integer 列
-            # {"logical": f"{PREFIX}_quantity", "type": "Integer", "display": "Quantity"},
-
-            # DateTime 列（DateAndTime or DateOnly）
-            # {"logical": f"{PREFIX}_duedate", "type": "DateTime", "display": "Due Date", "format": "DateOnly"},
-
-            # Memo 列
-            # {"logical": f"{PREFIX}_description", "type": "Memo", "display": "Description", "maxLength": 4000},
-
-            # Picklist 列（Choice — 値は 100000000 始まり）
-            # {
-            #     "logical": f"{PREFIX}_status", "type": "Picklist", "display": "Status",
-            #     "options": [
-            #         (100000000, "New"),
-            #         (100000001, "In Progress"),
-            #         (100000002, "Completed"),
-            #     ],
-            # },
+            {"logical": f"{PREFIX}_partname", "type": "String", "display": "Part Name", "maxLength": 200},
+            {"logical": f"{PREFIX}_stock", "type": "Integer", "display": "Stock"},
+            {"logical": f"{PREFIX}_minstock", "type": "Integer", "display": "Min Stock"},
         ],
     },
-    # --- 従属テーブル ---
-    # {
-    #     "logical": f"{PREFIX}_samplechild",
-    #     "display": "Sample Child",
-    #     "plural": "Sample Children",
-    #     "description": "サンプル従属テーブル",
-    #     "columns": [
-    #         {"logical": f"{PREFIX}_content", "type": "Memo", "display": "Content", "maxLength": 4000},
-    #     ],
-    # },
+    {
+        "logical": f"{PREFIX}_qualityissue",
+        "display": "Quality Issue",
+        "plural": "Quality Issues",
+        "description": "品質課題",
+        "primary_schema": f"{PREFIX}_title",
+        "primary_display": "Title",
+        "columns": [
+            {"logical": f"{PREFIX}_category", "type": "Picklist", "display": "Category",
+             "options": [
+                 (100000000, "寸法不良"), (100000001, "外観不良"),
+                 (100000002, "機能不良"), (100000003, "その他"),
+             ]},
+            {"logical": f"{PREFIX}_severity", "type": "Picklist", "display": "Severity",
+             "options": [
+                 (100000000, "軽微"), (100000001, "中程度"),
+                 (100000002, "重大"), (100000003, "致命的"),
+             ]},
+            {"logical": f"{PREFIX}_status", "type": "Picklist", "display": "Status",
+             "options": [
+                 (100000000, "未着手"), (100000001, "対応中"), (100000002, "完了"),
+             ]},
+            {"logical": f"{PREFIX}_description", "type": "Memo", "display": "Description", "maxLength": 2000},
+        ],
+    },
+    {
+        "logical": f"{PREFIX}_newsinsight",
+        "display": "News Insight",
+        "plural": "News Insights",
+        "description": "ニュースインサイト",
+        "primary_schema": f"{PREFIX}_headline",
+        "primary_display": "Headline",
+        "columns": [
+            {"logical": f"{PREFIX}_summary", "type": "Memo", "display": "Summary", "maxLength": 2000},
+            {"logical": f"{PREFIX}_action", "type": "Memo", "display": "Action", "maxLength": 2000},
+            {"logical": f"{PREFIX}_impact", "type": "Integer", "display": "Impact"},
+            {"logical": f"{PREFIX}_category", "type": "String", "display": "Category", "maxLength": 100},
+            {"logical": f"{PREFIX}_relatedcustomers", "type": "String", "display": "Related Customers", "maxLength": 400},
+            {"logical": f"{PREFIX}_generateddate", "type": "DateTime", "display": "Generated Date", "format": "DateOnly"},
+        ],
+    },
+    {
+        "logical": f"{PREFIX}_incident",
+        "display": "Incident",
+        "plural": "Incidents",
+        "description": "インシデント",
+        "primary_schema": f"{PREFIX}_title",
+        "primary_display": "Title",
+        "columns": [
+            {"logical": f"{PREFIX}_description", "type": "Memo", "display": "Description", "maxLength": 2000},
+            {"logical": f"{PREFIX}_status", "type": "Picklist", "display": "Status",
+             "options": [
+                 (100000000, "新規"), (100000001, "対応中"),
+                 (100000002, "解決済"), (100000003, "クローズ"),
+             ]},
+            {"logical": f"{PREFIX}_priority", "type": "Picklist", "display": "Priority",
+             "options": [
+                 (100000000, "低"), (100000001, "中"), (100000002, "高"), (100000003, "緊急"),
+             ]},
+            {"logical": f"{PREFIX}_assettype", "type": "Picklist", "display": "Asset Type",
+             "options": [
+                 (100000000, "PC"), (100000001, "サーバー"), (100000002, "プリンター"),
+                 (100000003, "ネットワーク機器"), (100000004, "モバイルデバイス"),
+                 (100000005, "ソフトウェア"), (100000006, "その他"),
+             ]},
+            {"logical": f"{PREFIX}_assetstatus", "type": "Picklist", "display": "Asset Status",
+             "options": [
+                 (100000000, "稼働中"), (100000001, "故障中"),
+                 (100000002, "メンテナンス中"), (100000003, "廃棄済"),
+             ]},
+            {"logical": f"{PREFIX}_reportedby", "type": "String", "display": "Reported By", "maxLength": 100},
+            {"logical": f"{PREFIX}_assignedto", "type": "String", "display": "Assigned To", "maxLength": 100},
+            {"logical": f"{PREFIX}_resolvedon", "type": "DateTime", "display": "Resolved On", "format": "DateOnly"},
+            {"logical": f"{PREFIX}_resolution", "type": "Memo", "display": "Resolution", "maxLength": 2000},
+        ],
+    },
+    # ── Tier 1: geek_customer に依存 ──
+    {
+        "logical": f"{PREFIX}_opportunity",
+        "display": "Opportunity",
+        "plural": "Opportunities",
+        "description": "商談",
+        "columns": [
+            {"logical": f"{PREFIX}_stage", "type": "Picklist", "display": "Stage",
+             "options": [
+                 (100000000, "リード"), (100000001, "提案"), (100000002, "見積"),
+                 (100000003, "交渉"), (100000004, "受注"), (100000005, "失注"), (100000006, "キャンセル"),
+             ]},
+            {"logical": f"{PREFIX}_amount", "type": "Money", "display": "Amount"},
+            {"logical": f"{PREFIX}_probability", "type": "Integer", "display": "Probability"},
+            {"logical": f"{PREFIX}_expectedclosedate", "type": "DateTime", "display": "Expected Close Date", "format": "DateOnly"},
+            {"logical": f"{PREFIX}_description", "type": "Memo", "display": "Description", "maxLength": 2000},
+            {"logical": f"{PREFIX}_aiinsights", "type": "Memo", "display": "AI Insights", "maxLength": 4000},
+        ],
+    },
+    {
+        "logical": f"{PREFIX}_territory",
+        "display": "Territory",
+        "plural": "Territories",
+        "description": "テリトリー",
+        "columns": [
+            {"logical": f"{PREFIX}_budget", "type": "Money", "display": "Budget"},
+            {"logical": f"{PREFIX}_fiscalyear", "type": "Integer", "display": "Fiscal Year"},
+            {"logical": f"{PREFIX}_notes", "type": "Memo", "display": "Notes", "maxLength": 2000},
+        ],
+    },
+    {
+        "logical": f"{PREFIX}_productionorder",
+        "display": "Production Order",
+        "plural": "Production Orders",
+        "description": "生産指示",
+        "primary_schema": f"{PREFIX}_ordernumber",
+        "primary_display": "Order Number",
+        "columns": [
+            {"logical": f"{PREFIX}_productname", "type": "String", "display": "Product Name", "maxLength": 200},
+            {"logical": f"{PREFIX}_line", "type": "String", "display": "Line", "maxLength": 100},
+            {"logical": f"{PREFIX}_duedate", "type": "DateTime", "display": "Due Date", "format": "DateOnly"},
+            {"logical": f"{PREFIX}_quantity", "type": "Integer", "display": "Quantity"},
+            {"logical": f"{PREFIX}_progress", "type": "Integer", "display": "Progress", "minValue": 0, "maxValue": 100},
+            {"logical": f"{PREFIX}_status", "type": "Picklist", "display": "Status",
+             "options": [
+                 (100000000, "設計中"), (100000001, "部品調達"), (100000002, "組立中"),
+                 (100000003, "検査待ち"), (100000004, "出荷済み"), (100000005, "完了"),
+             ]},
+        ],
+    },
+    # ── Tier 2: geek_customer と geek_opportunity に依存 ──
+    {
+        "logical": f"{PREFIX}_activity",
+        "display": "Activity",
+        "plural": "Activities",
+        "description": "活動履歴",
+        "columns": [
+            {"logical": f"{PREFIX}_type", "type": "Picklist", "display": "Type",
+             "options": [
+                 (100000000, "訪問"), (100000001, "電話"), (100000002, "メール"),
+                 (100000003, "オンライン会議"), (100000004, "その他"),
+             ]},
+            {"logical": f"{PREFIX}_activitydate", "type": "DateTime", "display": "Activity Date", "format": "DateOnly"},
+            {"logical": f"{PREFIX}_content", "type": "Memo", "display": "Content", "maxLength": 2000},
+            {"logical": f"{PREFIX}_nextaction", "type": "Memo", "display": "Next Action", "maxLength": 1000},
+        ],
+    },
 ]
 
 LOOKUPS = [
-    # 通常の Lookup:
-    # {"schema": f"{PREFIX}_samplemain_{PREFIX}_samplemaster",
-    #  "referencing": f"{PREFIX}_samplemain",
-    #  "referenced": f"{PREFIX}_samplemaster",
-    #  "lookup_attr": f"{PREFIX}_samplemasterid",
-    #  "lookup_display": "Sample Master"},
-
-    # SystemUser への Lookup（担当者等）:
-    # {"schema": f"{PREFIX}_samplemain_systemuser_assignee",
-    #  "referencing": f"{PREFIX}_samplemain",
-    #  "referenced": "systemuser",
-    #  "lookup_attr": f"{PREFIX}_assigneeid",
-    #  "lookup_display": "Assigned To"},
+    {"schema": f"{PREFIX}_opportunity_{PREFIX}_customer",
+     "referencing": f"{PREFIX}_opportunity", "referenced": f"{PREFIX}_customer",
+     "lookup_attr": f"{PREFIX}_customerid", "lookup_display": "Customer"},
+    {"schema": f"{PREFIX}_territory_{PREFIX}_customer",
+     "referencing": f"{PREFIX}_territory", "referenced": f"{PREFIX}_customer",
+     "lookup_attr": f"{PREFIX}_customerid", "lookup_display": "Customer"},
+    {"schema": f"{PREFIX}_productionorder_{PREFIX}_customer",
+     "referencing": f"{PREFIX}_productionorder", "referenced": f"{PREFIX}_customer",
+     "lookup_attr": f"{PREFIX}_customerid", "lookup_display": "Customer"},
+    {"schema": f"{PREFIX}_activity_{PREFIX}_customer",
+     "referencing": f"{PREFIX}_activity", "referenced": f"{PREFIX}_customer",
+     "lookup_attr": f"{PREFIX}_customerid", "lookup_display": "Customer"},
+    {"schema": f"{PREFIX}_activity_{PREFIX}_opportunity",
+     "referencing": f"{PREFIX}_activity", "referenced": f"{PREFIX}_opportunity",
+     "lookup_attr": f"{PREFIX}_opportunityid", "lookup_display": "Opportunity"},
 ]
 
-# ── ローカライズ定義 ─────────────────────────────────────
-
-# テーブル表示名の日本語化
 LOCALIZE_TABLES = [
-    # (論理名, 日本語表示名, 日本語複数形)
-    # (f"{PREFIX}_samplemaster", "サンプルマスタ", "サンプルマスタ"),
-    # (f"{PREFIX}_samplemain", "サンプルメイン", "サンプルメイン一覧"),
+    (f"{PREFIX}_customer", "顧客", "顧客"),
+    (f"{PREFIX}_opportunity", "商談", "商談"),
+    (f"{PREFIX}_activity", "活動履歴", "活動履歴"),
+    (f"{PREFIX}_territory", "テリトリー", "テリトリー"),
+    (f"{PREFIX}_newsinsight", "ニュースインサイト", "ニュースインサイト"),
+    (f"{PREFIX}_incident", "インシデント", "インシデント"),
+    (f"{PREFIX}_productionorder", "生産指示", "生産指示"),
+    (f"{PREFIX}_inventoryitem", "在庫", "在庫"),
+    (f"{PREFIX}_qualityissue", "品質課題", "品質課題"),
 ]
 
-# 列表示名の日本語化
 LOCALIZE_COLUMNS = [
-    # (テーブル論理名, 列論理名, 日本語表示名)
-    # (f"{PREFIX}_samplemaster", f"{PREFIX}_name", "名前"),
-    # (f"{PREFIX}_samplemain", f"{PREFIX}_name", "名前"),
-    # (f"{PREFIX}_samplemain", f"{PREFIX}_status", "ステータス"),
-    # (f"{PREFIX}_samplemain", f"{PREFIX}_samplemasterid", "マスタ"),  # Lookup 列も忘れずに
+    (f"{PREFIX}_customer", f"{PREFIX}_name", "会社名"),
+    (f"{PREFIX}_customer", f"{PREFIX}_industry", "業種"),
+    (f"{PREFIX}_customer", f"{PREFIX}_contactperson", "担当者名"),
+    (f"{PREFIX}_customer", f"{PREFIX}_email", "メール"),
+    (f"{PREFIX}_customer", f"{PREFIX}_phone", "電話番号"),
+    (f"{PREFIX}_customer", f"{PREFIX}_address", "住所"),
+    (f"{PREFIX}_customer", f"{PREFIX}_notes", "備考"),
+    (f"{PREFIX}_opportunity", f"{PREFIX}_name", "商談名"),
+    (f"{PREFIX}_opportunity", f"{PREFIX}_stage", "フェーズ"),
+    (f"{PREFIX}_opportunity", f"{PREFIX}_amount", "金額"),
+    (f"{PREFIX}_opportunity", f"{PREFIX}_probability", "確度"),
+    (f"{PREFIX}_opportunity", f"{PREFIX}_expectedclosedate", "予定完了日"),
+    (f"{PREFIX}_opportunity", f"{PREFIX}_description", "詳細"),
+    (f"{PREFIX}_opportunity", f"{PREFIX}_aiinsights", "AIインサイト"),
+    (f"{PREFIX}_opportunity", f"{PREFIX}_customerid", "顧客"),
+    (f"{PREFIX}_activity", f"{PREFIX}_name", "件名"),
+    (f"{PREFIX}_activity", f"{PREFIX}_type", "種別"),
+    (f"{PREFIX}_activity", f"{PREFIX}_activitydate", "活動日"),
+    (f"{PREFIX}_activity", f"{PREFIX}_content", "内容"),
+    (f"{PREFIX}_activity", f"{PREFIX}_nextaction", "次のアクション"),
+    (f"{PREFIX}_activity", f"{PREFIX}_customerid", "顧客"),
+    (f"{PREFIX}_activity", f"{PREFIX}_opportunityid", "商談"),
+    (f"{PREFIX}_territory", f"{PREFIX}_name", "テリトリー名"),
+    (f"{PREFIX}_territory", f"{PREFIX}_budget", "予算"),
+    (f"{PREFIX}_territory", f"{PREFIX}_fiscalyear", "会計年度"),
+    (f"{PREFIX}_territory", f"{PREFIX}_notes", "備考"),
+    (f"{PREFIX}_territory", f"{PREFIX}_customerid", "顧客"),
+    (f"{PREFIX}_newsinsight", f"{PREFIX}_headline", "見出し"),
+    (f"{PREFIX}_newsinsight", f"{PREFIX}_summary", "要約"),
+    (f"{PREFIX}_newsinsight", f"{PREFIX}_action", "アクション"),
+    (f"{PREFIX}_newsinsight", f"{PREFIX}_impact", "インパクト"),
+    (f"{PREFIX}_newsinsight", f"{PREFIX}_category", "カテゴリ"),
+    (f"{PREFIX}_newsinsight", f"{PREFIX}_relatedcustomers", "関連顧客"),
+    (f"{PREFIX}_newsinsight", f"{PREFIX}_generateddate", "生成日"),
+    (f"{PREFIX}_incident", f"{PREFIX}_title", "タイトル"),
+    (f"{PREFIX}_incident", f"{PREFIX}_description", "詳細"),
+    (f"{PREFIX}_incident", f"{PREFIX}_status", "ステータス"),
+    (f"{PREFIX}_incident", f"{PREFIX}_priority", "優先度"),
+    (f"{PREFIX}_incident", f"{PREFIX}_assettype", "資産種別"),
+    (f"{PREFIX}_incident", f"{PREFIX}_assetstatus", "資産ステータス"),
+    (f"{PREFIX}_incident", f"{PREFIX}_reportedby", "報告者"),
+    (f"{PREFIX}_incident", f"{PREFIX}_assignedto", "担当者"),
+    (f"{PREFIX}_incident", f"{PREFIX}_resolvedon", "解決日"),
+    (f"{PREFIX}_incident", f"{PREFIX}_resolution", "解決内容"),
+    (f"{PREFIX}_productionorder", f"{PREFIX}_ordernumber", "指示番号"),
+    (f"{PREFIX}_productionorder", f"{PREFIX}_productname", "製品名"),
+    (f"{PREFIX}_productionorder", f"{PREFIX}_line", "生産ライン"),
+    (f"{PREFIX}_productionorder", f"{PREFIX}_duedate", "納期"),
+    (f"{PREFIX}_productionorder", f"{PREFIX}_quantity", "数量"),
+    (f"{PREFIX}_productionorder", f"{PREFIX}_progress", "進捗率"),
+    (f"{PREFIX}_productionorder", f"{PREFIX}_status", "ステータス"),
+    (f"{PREFIX}_productionorder", f"{PREFIX}_customerid", "顧客"),
+    (f"{PREFIX}_inventoryitem", f"{PREFIX}_partnumber", "部品番号"),
+    (f"{PREFIX}_inventoryitem", f"{PREFIX}_partname", "部品名"),
+    (f"{PREFIX}_inventoryitem", f"{PREFIX}_stock", "在庫数"),
+    (f"{PREFIX}_inventoryitem", f"{PREFIX}_minstock", "最小在庫数"),
+    (f"{PREFIX}_qualityissue", f"{PREFIX}_title", "タイトル"),
+    (f"{PREFIX}_qualityissue", f"{PREFIX}_category", "カテゴリ"),
+    (f"{PREFIX}_qualityissue", f"{PREFIX}_severity", "重大度"),
+    (f"{PREFIX}_qualityissue", f"{PREFIX}_status", "ステータス"),
+    (f"{PREFIX}_qualityissue", f"{PREFIX}_description", "詳細説明"),
 ]
 
-# Choice オプションの日本語化
 LOCALIZE_OPTIONS = [
-    # (テーブル論理名, 列論理名, [(値, 日本語ラベル), ...])
-    # (f"{PREFIX}_samplemain", f"{PREFIX}_status", [
-    #     (100000000, "新規"),
-    #     (100000001, "進行中"),
-    #     (100000002, "完了"),
-    # ]),
+    (f"{PREFIX}_customer", f"{PREFIX}_industry", [
+        (100000000, "製造"), (100000001, "IT"), (100000002, "商社"),
+        (100000003, "小売"), (100000004, "金融"), (100000005, "その他"),
+    ]),
+    (f"{PREFIX}_opportunity", f"{PREFIX}_stage", [
+        (100000000, "リード"), (100000001, "提案"), (100000002, "見積"),
+        (100000003, "交渉"), (100000004, "受注"), (100000005, "失注"), (100000006, "キャンセル"),
+    ]),
+    (f"{PREFIX}_activity", f"{PREFIX}_type", [
+        (100000000, "訪問"), (100000001, "電話"), (100000002, "メール"),
+        (100000003, "オンライン会議"), (100000004, "その他"),
+    ]),
+    (f"{PREFIX}_incident", f"{PREFIX}_status", [
+        (100000000, "新規"), (100000001, "対応中"), (100000002, "解決済"), (100000003, "クローズ"),
+    ]),
+    (f"{PREFIX}_incident", f"{PREFIX}_priority", [
+        (100000000, "低"), (100000001, "中"), (100000002, "高"), (100000003, "緊急"),
+    ]),
+    (f"{PREFIX}_incident", f"{PREFIX}_assettype", [
+        (100000000, "PC"), (100000001, "サーバー"), (100000002, "プリンター"),
+        (100000003, "ネットワーク機器"), (100000004, "モバイルデバイス"),
+        (100000005, "ソフトウェア"), (100000006, "その他"),
+    ]),
+    (f"{PREFIX}_incident", f"{PREFIX}_assetstatus", [
+        (100000000, "稼働中"), (100000001, "故障中"), (100000002, "メンテナンス中"), (100000003, "廃棄済"),
+    ]),
+    (f"{PREFIX}_productionorder", f"{PREFIX}_status", [
+        (100000000, "設計中"), (100000001, "部品調達"), (100000002, "組立中"),
+        (100000003, "検査待ち"), (100000004, "出荷済み"), (100000005, "完了"),
+    ]),
+    (f"{PREFIX}_qualityissue", f"{PREFIX}_category", [
+        (100000000, "寸法不良"), (100000001, "外観不良"), (100000002, "機能不良"), (100000003, "その他"),
+    ]),
+    (f"{PREFIX}_qualityissue", f"{PREFIX}_severity", [
+        (100000000, "軽微"), (100000001, "中程度"), (100000002, "重大"), (100000003, "致命的"),
+    ]),
+    (f"{PREFIX}_qualityissue", f"{PREFIX}_status", [
+        (100000000, "未着手"), (100000001, "対応中"), (100000002, "完了"),
+    ]),
 ]
 
 # ════════════════════════════════════════════════════════════════
@@ -323,6 +539,8 @@ def create_tables():
         logical = tbl["logical"]
 
         def _create(t=tbl):
+            primary_schema = t.get("primary_schema", f"{PREFIX}_name")
+            primary_display = t.get("primary_display", "Name")
             body = {
                 "@odata.type": "#Microsoft.Dynamics.CRM.EntityMetadata",
                 "SchemaName": t["logical"],
@@ -334,12 +552,12 @@ def create_tables():
                 "HasActivities": False,
                 "HasNotes": False,
                 "HasFeedback": False,
-                "PrimaryNameAttribute": f"{PREFIX}_name",
+                "PrimaryNameAttribute": primary_schema,
                 "Attributes": [
                     {
                         "@odata.type": "#Microsoft.Dynamics.CRM.StringAttributeMetadata",
-                        "SchemaName": f"{PREFIX}_name",
-                        "DisplayName": label_jp("Name"),
+                        "SchemaName": primary_schema,
+                        "DisplayName": label_jp(primary_display),
                         "IsPrimaryName": True,
                         "RequiredLevel": {"Value": "ApplicationRequired"},
                         "FormatName": {"Value": "Text"},
