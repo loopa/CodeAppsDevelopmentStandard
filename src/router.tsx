@@ -1,11 +1,16 @@
 ﻿import { createBrowserRouter, Navigate } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import Layout from "@/pages/_layout";
 
 const NotFoundPage = lazy(() => import("@/pages/not-found"));
 
 // ダッシュボード
-const DashboardPage = lazy(() => import("@/pages/dashboard"));
+const DashboardPage = lazy(() => import("@/pages/production-dashboard"));
+
+// 生産管理
+const WorkOrdersPage = lazy(() => import("@/pages/work-orders"));
+const InventoryPage = lazy(() => import("@/pages/inventory"));
+const QualityPage = lazy(() => import("@/pages/quality"));
 
 // 営業管理
 const CustomersPage = lazy(() => import("@/pages/customers"));
@@ -31,7 +36,7 @@ const PageLoader = () => (
 
 // Suspenseラッパー
 const withSuspense = (
-  Component: React.LazyExoticComponent<() => React.JSX.Element>,
+  Component: React.LazyExoticComponent<ComponentType<any>>,
 ) => (
   <Suspense fallback={<PageLoader />}>
     <Component />
@@ -54,6 +59,9 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: <Navigate to="/dashboard" replace /> },
         { path: "dashboard", element: withSuspense(DashboardPage) },
+        { path: "production-orders", element: withSuspense(WorkOrdersPage) },
+        { path: "inventory", element: withSuspense(InventoryPage) },
+        { path: "quality", element: withSuspense(QualityPage) },
         { path: "customers", element: withSuspense(CustomersPage) },
         { path: "customers/:id", element: withSuspense(CustomerDetailPage) },
         { path: "opportunities", element: withSuspense(OpportunitiesPage) },
