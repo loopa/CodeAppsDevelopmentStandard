@@ -95,7 +95,7 @@ export async function updateProductionOrder(id: string, data: Partial<Production
   if (data.quantity !== undefined) body.geek_quantity = data.quantity;
   if (data.progress !== undefined) body.geek_progress = data.progress;
   if (data.status !== undefined) body.geek_status = ProductionOrderStatusValues[data.status];
-  if (data.customerId !== undefined) {
+  if (data.customerId) {
     body["geek_customerid@odata.bind"] = `/geek_customers(${data.customerId})`;
   }
   const result = await client().updateRecordAsync<typeof body, ProductionOrderRecord>(
