@@ -78,3 +78,12 @@ icon_preview.svg
 
 # Build info
 tsconfig.tsbuildinfo
+
+# direnv
+.envrc
+
+# Playwright MCP debug artifacts
+.playwright-mcp/
+
+# Local smoke-test screenshots
+smoke-*.png
