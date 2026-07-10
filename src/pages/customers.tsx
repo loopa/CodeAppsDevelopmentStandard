@@ -15,6 +15,7 @@ import { LoadingSkeletonCard } from "@/components/loading-skeleton";
 import { FormModal } from "@/components/form-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Plus, Trash2, LayoutGrid, List, Handshake, CalendarClock } from "lucide-react";
+import { toast } from "sonner";
 
 type ViewMode = "table" | "card";
 
@@ -138,11 +139,15 @@ export default function CustomersPage() {
     if (editItem) {
       updateMutation.mutate(
         { id: editItem.geek_customerid, data: formData },
-        { onSuccess: () => { setIsFormOpen(false); setEditItem(null); } }
+        {
+          onSuccess: () => { setIsFormOpen(false); setEditItem(null); },
+          onError: () => { toast.error("顧客の更新に失敗しました"); },
+        }
       );
     } else {
       createMutation.mutate(formData as CustomerCreate, {
         onSuccess: () => { setIsFormOpen(false); },
+        onError: () => { toast.error("顧客の作成に失敗しました"); },
       });
     }
   };
@@ -298,6 +303,7 @@ export default function CustomersPage() {
           if (deleteTarget) {
             deleteMutation.mutate(deleteTarget.geek_customerid, {
               onSuccess: () => { setDeleteTarget(null); setIsFormOpen(false); setEditItem(null); },
+              onError: () => { toast.error("顧客の削除に失敗しました"); },
             });
           }
         }}

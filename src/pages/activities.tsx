@@ -14,6 +14,7 @@ import { LoadingSkeletonCard } from "@/components/loading-skeleton";
 import { FormModal } from "@/components/form-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Plus, Trash2, List, Clock, Phone, Mail, Users, Video, MessageSquare } from "lucide-react";
+import { toast } from "sonner";
 
 type ViewMode = "table" | "timeline";
 
@@ -113,21 +114,18 @@ export default function ActivitiesPage() {
   ], []);
 
   const handleSave = (formData: Partial<ActivityCreate>) => {
-    console.log('[Activities] handleSave called, editItem:', editItem?.geek_activityid, 'data:', JSON.stringify(formData));
     if (editItem) {
-      console.log('[Activities] Calling updateMutation.mutate, id:', editItem.geek_activityid);
       updateMutation.mutate(
         { id: editItem.geek_activityid, data: formData },
         {
-          onSuccess: () => { console.log('[Activities] ✅ Update SUCCESS'); setIsFormOpen(false); setEditItem(null); },
-          onError: (err) => { console.error('[Activities] ❌ Update FAILED:', err); },
+          onSuccess: () => { setIsFormOpen(false); setEditItem(null); },
+          onError: () => { toast.error("活動記録の更新に失敗しました"); },
         },
       );
     } else {
-      console.log('[Activities] Calling createMutation.mutate');
       createMutation.mutate(formData as ActivityCreate, {
-        onSuccess: () => { console.log('[Activities] ✅ Create SUCCESS'); setIsFormOpen(false); },
-        onError: (err) => { console.error('[Activities] ❌ Create FAILED:', err); },
+        onSuccess: () => { setIsFormOpen(false); },
+        onError: () => { toast.error("活動記録の作成に失敗しました"); },
       });
     }
   };
@@ -245,14 +243,7 @@ export default function ActivitiesPage() {
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
         title={editItem ? "活動編集" : "新規活動記録"}
-        onSave={() => {
-          console.log('[Activities] onSave called, submitRef.current:', typeof submitRef.current);
-          if (submitRef.current) {
-            submitRef.current();
-          } else {
-            console.error('[Activities] ❌ submitRef.current is null!');
-          }
-        }}
+        onSave={() => submitRef.current?.()}
         isSaving={createMutation.isPending || updateMutation.isPending}
       >
         <ActivityForm
@@ -274,6 +265,7 @@ export default function ActivitiesPage() {
           if (deleteTarget) {
             deleteMutation.mutate(deleteTarget.geek_activityid, {
               onSuccess: () => { setDeleteTarget(null); setIsFormOpen(false); setEditItem(null); },
+              onError: () => { toast.error("活動記録の削除に失敗しました"); },
             });
           }
         }}
@@ -311,11 +303,7 @@ function ActivityForm({
 
   // submitRef にデータ収集＆送信ロジックを登録
   const doSubmit = () => {
-    console.log('[ActivityForm] doSubmit called, name:', name);
-    if (!name.trim()) {
-      console.warn('[ActivityForm] ⚠️ name is empty, aborting');
-      return;
-    }
+    if (!name.trim()) return;
     const data: Partial<ActivityCreate> = {
       geek_name: name,
       geek_type: Number(type),
@@ -325,7 +313,6 @@ function ActivityForm({
       ...(customerId && { "geek_customerid@odata.bind": `/geek_customers(${customerId})` } as unknown as Partial<ActivityCreate>),
       ...(opportunityId && { "geek_opportunityid@odata.bind": `/geek_opportunities(${opportunityId})` } as unknown as Partial<ActivityCreate>),
     };
-    console.log('[ActivityForm] ✅ calling onSubmit with data:', JSON.stringify(data));
     onSubmit(data);
   };
   if (submitRef) submitRef.current = doSubmit;

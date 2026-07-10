@@ -39,6 +39,7 @@ import {
   PipelineFunnelChart,
   MonthlyDealPaceChart,
 } from "@/components/territory-charts";
+import { toast } from "sonner";
 import {
   useTerritories,
   useCreateTerritory,
@@ -276,11 +277,15 @@ export default function TerritoryPage() {
     if (editItem) {
       updateMut.mutate(
         { id: editItem.geek_territoryid, data },
-        { onSuccess: () => { setIsFormOpen(false); setEditItem(null); } },
+        {
+          onSuccess: () => { setIsFormOpen(false); setEditItem(null); },
+          onError: () => { toast.error("テリトリーの更新に失敗しました"); },
+        },
       );
     } else {
       createMut.mutate(data as TerritoryCreate, {
         onSuccess: () => { setIsFormOpen(false); },
+        onError: () => { toast.error("テリトリーの作成に失敗しました"); },
       });
     }
   };
@@ -690,6 +695,7 @@ export default function TerritoryPage() {
           if (deleteTarget) {
             deleteMut.mutate(deleteTarget.geek_territoryid, {
               onSuccess: () => { setDeleteTarget(null); setIsFormOpen(false); setEditItem(null); },
+              onError: () => { toast.error("テリトリーの削除に失敗しました"); },
             });
           }
         }}

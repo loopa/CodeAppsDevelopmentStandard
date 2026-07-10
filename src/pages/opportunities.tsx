@@ -14,6 +14,7 @@ import { FormModal } from "@/components/form-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Plus, Trash2, TrendingUp, Trophy, XCircle, Handshake } from "lucide-react";
 import { StageProgressBar } from "@/components/stage-progress-bar";
+import { toast } from "sonner";
 
 export default function OpportunitiesPage() {
   const navigate = useNavigate();
@@ -113,11 +114,15 @@ export default function OpportunitiesPage() {
     if (editItem) {
       updateMutation.mutate(
         { id: editItem.geek_opportunityid, data: formData },
-        { onSuccess: () => { setIsFormOpen(false); setEditItem(null); } }
+        {
+          onSuccess: () => { setIsFormOpen(false); setEditItem(null); },
+          onError: () => { toast.error("商談の更新に失敗しました"); },
+        }
       );
     } else {
       createMutation.mutate(formData as OpportunityCreate, {
         onSuccess: () => { setIsFormOpen(false); },
+        onError: () => { toast.error("商談の作成に失敗しました"); },
       });
     }
   };
@@ -246,6 +251,7 @@ export default function OpportunitiesPage() {
           if (deleteTarget) {
             deleteMutation.mutate(deleteTarget.geek_opportunityid, {
               onSuccess: () => { setDeleteTarget(null); setIsFormOpen(false); setEditItem(null); },
+              onError: () => { toast.error("商談の削除に失敗しました"); },
             });
           }
         }}

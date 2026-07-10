@@ -189,21 +189,10 @@ export async function updateActivity(
   id: string,
   data: Partial<ActivityCreate>,
 ) {
-  console.log(
-    "[dataverse-service] updateActivity called, id:",
-    id,
-    "data:",
-    JSON.stringify(data),
-  );
   const result = await client().updateRecordAsync<
     Partial<ActivityCreate>,
     Activity
   >("geek_activities", id, data);
-  console.log(
-    "[dataverse-service] updateActivity result:",
-    result.success,
-    result.error,
-  );
   if (!result.success) throw result.error;
   return result.data;
 }

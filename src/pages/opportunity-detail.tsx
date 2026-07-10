@@ -140,6 +140,7 @@ export default function OpportunityDetailPage() {
           setIsEditing(false);
           toast.success("商談を更新しました");
         },
+        onError: () => { toast.error("商談の更新に失敗しました"); },
       },
     );
   };
@@ -231,6 +232,7 @@ export default function OpportunityDetailPage() {
                   onSuccess: () => {
                     toast.success(`フェーズを「${StageOptions[newStage]}」に変更しました`);
                   },
+                  onError: () => { toast.error("フェーズの更新に失敗しました"); },
                 },
               );
             }}
@@ -468,6 +470,7 @@ export default function OpportunityDetailPage() {
               toast.success("商談を削除しました");
               navigate("/opportunities");
             },
+            onError: () => { toast.error("商談の削除に失敗しました"); },
           });
         }}
         confirmLabel="削除"

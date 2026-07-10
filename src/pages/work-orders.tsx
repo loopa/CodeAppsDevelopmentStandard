@@ -16,6 +16,7 @@ import { LoadingSkeletonCard } from "@/components/loading-skeleton";
 import { FormModal } from "@/components/form-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const STATUS_OPTIONS = Object.keys(ProductionOrderStatusValues) as ProductionOrderStatus[];
 
@@ -62,11 +63,15 @@ export default function WorkOrdersPage() {
     if (editItem) {
       updateMutation.mutate(
         { id: editItem.id, data: formData },
-        { onSuccess: () => { setIsFormOpen(false); setEditItem(null); } },
+        {
+          onSuccess: () => { setIsFormOpen(false); setEditItem(null); },
+          onError: () => { toast.error("生産指示の更新に失敗しました"); },
+        },
       );
     } else {
       createMutation.mutate(formData as ProductionOrderCreate, {
         onSuccess: () => { setIsFormOpen(false); },
+        onError: () => { toast.error("生産指示の作成に失敗しました"); },
       });
     }
   };
@@ -117,6 +122,7 @@ export default function WorkOrdersPage() {
           if (deleteTarget) {
             deleteMutation.mutate(deleteTarget.id, {
               onSuccess: () => { setDeleteTarget(null); setIsFormOpen(false); setEditItem(null); },
+              onError: () => { toast.error("生産指示の削除に失敗しました"); },
             });
           }
         }}

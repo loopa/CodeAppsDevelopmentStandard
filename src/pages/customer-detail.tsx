@@ -118,7 +118,10 @@ export default function CustomerDetailPage() {
     };
     updateCustomer.mutate(
       { id: customer.geek_customerid, data },
-      { onSuccess: () => { setIsEditing(false); toast.success("顧客情報を更新しました"); } },
+      {
+        onSuccess: () => { setIsEditing(false); toast.success("顧客情報を更新しました"); },
+        onError: () => { toast.error("顧客情報の更新に失敗しました"); },
+      },
     );
   };
 
@@ -636,7 +639,9 @@ export default function CustomerDetailPage() {
         onOpenChange={setAppointmentDialogOpen}
         customer={customer}
         recentActivities={relatedActivities}
-        onCreateActivity={(data) => createActivity.mutate(data)}
+        onCreateActivity={(data) => createActivity.mutate(data, {
+          onError: () => { toast.error("活動の記録に失敗しました"); },
+        })}
       />
 
       {/* 顧客編集モーダル → 削除（インライン編集に変更） */}
@@ -649,6 +654,7 @@ export default function CustomerDetailPage() {
         onConfirm={() => {
           deleteCustomer.mutate(customer.geek_customerid, {
             onSuccess: () => navigate("/customers"),
+            onError: () => { toast.error("顧客の削除に失敗しました"); },
           });
         }}
         confirmLabel="削除"

@@ -12,6 +12,7 @@ import { LoadingSkeletonCard } from "@/components/loading-skeleton";
 import { FormModal } from "@/components/form-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function InventoryPage() {
   const { data: items = [], isLoading } = useInventoryItems();
@@ -45,11 +46,15 @@ export default function InventoryPage() {
     if (editItem) {
       updateMutation.mutate(
         { id: editItem.id, data: formData },
-        { onSuccess: () => { setIsFormOpen(false); setEditItem(null); } },
+        {
+          onSuccess: () => { setIsFormOpen(false); setEditItem(null); },
+          onError: () => { toast.error("在庫の更新に失敗しました"); },
+        },
       );
     } else {
       createMutation.mutate(formData as InventoryItemCreate, {
         onSuccess: () => { setIsFormOpen(false); },
+        onError: () => { toast.error("在庫の作成に失敗しました"); },
       });
     }
   };
@@ -98,6 +103,7 @@ export default function InventoryPage() {
           if (deleteTarget) {
             deleteMutation.mutate(deleteTarget.id, {
               onSuccess: () => { setDeleteTarget(null); setIsFormOpen(false); setEditItem(null); },
+              onError: () => { toast.error("在庫の削除に失敗しました"); },
             });
           }
         }}
