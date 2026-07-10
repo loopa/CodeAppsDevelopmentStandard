@@ -7,6 +7,7 @@ export interface ProductionOrderRecord {
   geek_ordernumber: string;
   geek_productname?: string;
   _geek_customerid_value?: string;
+  _geek_workerid_value?: string;
   geek_line?: string;
   geek_duedate?: string;
   geek_quantity?: number;
@@ -44,6 +45,7 @@ export interface ProductionOrder {
   productName: string;
   customerId: string;
   customer: string;
+  workerId: string;
   line: string;
   dueDate: string;
   quantity: number;
@@ -55,6 +57,7 @@ export interface ProductionOrderCreate {
   orderNumber: string;
   productName: string;
   customerId: string;
+  workerId: string;
   line: string;
   dueDate: string;
   quantity: number;
@@ -99,6 +102,7 @@ export interface QualityIssueRecord {
   geek_severity?: number;
   geek_status?: number;
   geek_description?: string;
+  _geek_productionorderid_value?: string;
   createdon?: string;
   modifiedon?: string;
 }
@@ -136,6 +140,7 @@ export interface QualityIssue {
   severity: QualitySeverity;
   status: QualityStatus;
   description: string;
+  productionOrderId: string;
 }
 
 export interface QualityIssueCreate {
@@ -144,4 +149,44 @@ export interface QualityIssueCreate {
   severity: QualitySeverity;
   status: QualityStatus;
   description: string;
+  productionOrderId?: string;
+}
+
+// ── 作業者 (geek_worker) ──
+export interface WorkerRecord {
+  [key: string]: unknown;
+  geek_workerid: string;
+  geek_name: string;
+}
+
+export interface Worker {
+  [key: string]: unknown;
+  id: string;
+  name: string;
+}
+
+// ── チェック項目 (geek_checklistitem) ──
+export interface ChecklistItemRecord {
+  [key: string]: unknown;
+  geek_checklistitemid: string;
+  geek_name: string;
+  geek_iscompleted?: boolean;
+  geek_sequence?: number;
+  _geek_productionorderid_value?: string;
+}
+
+export interface ChecklistItem {
+  [key: string]: unknown;
+  id: string;
+  name: string;
+  isCompleted: boolean;
+  sequence: number;
+  productionOrderId: string;
+}
+
+export interface ChecklistItemCreate {
+  name: string;
+  isCompleted: boolean;
+  sequence: number;
+  productionOrderId: string;
 }
