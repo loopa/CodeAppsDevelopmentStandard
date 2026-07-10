@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const summary = useMemo(() => {
     const today = new Date();
     const overdueOrders = orders.filter(
-      (order) => new Date(order.dueDate) < today && order.status !== "出荷済み" && order.status !== "完了",
+      (order) => order.dueDate !== "" && new Date(order.dueDate) < today && order.status !== "出荷済み" && order.status !== "完了",
     );
     const lowStockItems = inventoryItems.filter((item) => item.stock <= item.minStock);
     const openQuality = qualityIssues.filter((issue) => issue.status !== "完了");
@@ -73,7 +73,11 @@ export default function DashboardPage() {
 
   const lowStockItems = useMemo(() => inventoryItems.filter((item) => item.stock <= item.minStock), [inventoryItems]);
   const upcomingOrders = useMemo(
-    () => [...orders].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()).slice(0, 5),
+    () =>
+      orders
+        .filter((order) => order.dueDate !== "")
+        .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+        .slice(0, 5),
     [orders],
   );
 
