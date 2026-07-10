@@ -24,6 +24,9 @@ const TerritoryPage = lazy(() => import("@/pages/territory"));
 // インシデント管理
 const IncidentsPage = lazy(() => import("@/pages/incidents"));
 
+// 作業者画面（キオスク）
+const WorkerPage = lazy(() => import("@/pages/worker"));
+
 // ローディングコンポーネント
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[400px]">
@@ -74,6 +77,11 @@ export const router = createBrowserRouter(
         { path: "activities", element: withSuspense(ActivitiesPage) },
         { path: "incidents", element: withSuspense(IncidentsPage) },
       ],
+    },
+    {
+      path: "/worker",
+      element: withSuspense(WorkerPage),
+      errorElement: withSuspense(NotFoundPage),
     },
   ],
   {
