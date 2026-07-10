@@ -256,6 +256,9 @@ def create_demo_workers():
 def ensure_solution_membership():
     print("\n=== ソリューション含有検証 ===")
     sols = api_get(f"solutions?$filter=uniquename eq '{SOLUTION_NAME}'&$select=solutionid")
+    if not sols.get("value"):
+        print(f"  ❌ ソリューション '{SOLUTION_NAME}' が見つかりません")
+        return
     sol_id = sols["value"][0]["solutionid"]
     comps = api_get(
         f"solutioncomponents?$filter=_solutionid_value eq {sol_id} and componenttype eq 1&$select=objectid"
