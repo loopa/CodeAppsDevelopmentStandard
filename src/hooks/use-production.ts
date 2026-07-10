@@ -3,8 +3,9 @@ import {
   getProductionOrders, createProductionOrder, updateProductionOrder, deleteProductionOrder,
   getInventoryItems, createInventoryItem, updateInventoryItem, deleteInventoryItem,
   getQualityIssues, createQualityIssue, updateQualityIssue, deleteQualityIssue,
+  getWorkers, getChecklistItems, createChecklistItem, updateChecklistItem, deleteChecklistItem,
 } from "@/services/production-service";
-import type { ProductionOrderCreate, InventoryItemCreate, QualityIssueCreate } from "@/types/production";
+import type { ProductionOrderCreate, InventoryItemCreate, QualityIssueCreate, ChecklistItemCreate } from "@/types/production";
 
 // ── 生産指示 hooks ──
 export function useProductionOrders() {
@@ -84,5 +85,41 @@ export function useDeleteQualityIssue() {
   return useMutation({
     mutationFn: (id: string) => deleteQualityIssue(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["qualityIssues"] }),
+  });
+}
+
+// ── 作業者 hooks ──
+export function useWorkers() {
+  return useQuery({ queryKey: ["workers"], queryFn: getWorkers });
+}
+
+// ── チェック項目 hooks ──
+export function useChecklistItems(orderId: string) {
+  return useQuery({
+    queryKey: ["checklistItems", orderId],
+    queryFn: () => getChecklistItems(orderId),
+    enabled: !!orderId,
+  });
+}
+export function useCreateChecklistItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ChecklistItemCreate) => createChecklistItem(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["checklistItems"] }),
+  });
+}
+export function useUpdateChecklistItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<ChecklistItemCreate> }) =>
+      updateChecklistItem(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["checklistItems"] }),
+  });
+}
+export function useDeleteChecklistItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteChecklistItem(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["checklistItems"] }),
   });
 }
