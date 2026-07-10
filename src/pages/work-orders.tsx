@@ -35,7 +35,7 @@ export default function WorkOrdersPage() {
   const submitRef = useRef<(() => void) | null>(null);
 
   const { data: workers = [] } = useWorkers();
-  const { data: existingChecklist = [] } = useChecklistItems(editItem?.id ?? "");
+  const { data: existingChecklist = [], isSuccess: checklistLoaded } = useChecklistItems(editItem?.id ?? "");
   const createChecklistMutation = useCreateChecklistItem();
   const deleteChecklistMutation = useDeleteChecklistItem();
 
@@ -68,7 +68,7 @@ export default function WorkOrdersPage() {
 
   type ChecklistDraft = { id?: string; name: string };
 
-  const syncChecklist = async (orderId: string, draft: ChecklistDraft[]) => {
+  const syncChecklist = async (orderId: string, draft: ChecklistDraft[]): Promise<boolean> => {
     const keptIds = new Set(draft.filter((d) => d.id).map((d) => d.id));
     const removed = existingChecklist.filter((i) => !keptIds.has(i.id));
     const added = draft.filter((d) => !d.id);
@@ -85,8 +85,10 @@ export default function WorkOrdersPage() {
           }),
         ),
       ]);
+      return true;
     } catch {
       toast.error("チェックリストの保存に失敗しました");
+      return false;
     }
   };
 
@@ -96,9 +98,8 @@ export default function WorkOrdersPage() {
         { id: editItem.id, data: formData },
         {
           onSuccess: async () => {
-            await syncChecklist(editItem.id, checklist);
-            setIsFormOpen(false);
-            setEditItem(null);
+            const ok = await syncChecklist(editItem.id, checklist);
+            if (ok) { setIsFormOpen(false); setEditItem(null); }
           },
           onError: () => { toast.error("生産指示の更新に失敗しました"); },
         },
@@ -144,7 +145,7 @@ export default function WorkOrdersPage() {
         isSaving={createMutation.isPending || updateMutation.isPending}
       >
         <WorkOrderForm
-          key={editItem?.id ?? "new"}
+          key={editItem ? `${editItem.id}-${checklistLoaded}` : "new"}
           item={editItem}
           customers={customers}
           workers={workers}
