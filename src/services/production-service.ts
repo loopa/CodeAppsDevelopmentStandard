@@ -21,6 +21,11 @@ import type {
   QualityIssue,
   QualityIssueCreate,
   QualityIssueRecord,
+  Worker,
+  WorkerRecord,
+  ChecklistItem,
+  ChecklistItemCreate,
+  ChecklistItemRecord,
 } from "@/types/production";
 
 function client() {
@@ -44,7 +49,7 @@ export async function getProductionOrders(): Promise<ProductionOrder[]> {
       select: [
         "geek_productionorderid", "geek_ordernumber", "geek_productname",
         "_geek_customerid_value", "geek_line", "geek_duedate",
-        "geek_quantity", "geek_progress", "geek_status",
+        "geek_quantity", "geek_progress", "geek_status", "_geek_workerid_value",
       ],
       orderBy: ["geek_duedate asc"],
     }),
@@ -79,6 +84,9 @@ export async function createProductionOrder(data: ProductionOrderCreate) {
   if (data.customerId) {
     body["geek_customerid@odata.bind"] = `/geek_customers(${data.customerId})`;
   }
+  if (data.workerId) {
+    body["geek_workerid@odata.bind"] = `/geek_workers(${data.workerId})`;
+  }
   const result = await client().createRecordAsync<typeof body, ProductionOrderRecord>(
     "geek_productionorders",
     body,
@@ -98,6 +106,9 @@ export async function updateProductionOrder(id: string, data: Partial<Production
   if (data.status !== undefined) body.geek_status = ProductionOrderStatusValues[data.status];
   if (data.customerId) {
     body["geek_customerid@odata.bind"] = `/geek_customers(${data.customerId})`;
+  }
+  if (data.workerId) {
+    body["geek_workerid@odata.bind"] = `/geek_workers(${data.workerId})`;
   }
   const result = await client().updateRecordAsync<typeof body, ProductionOrderRecord>(
     "geek_productionorders",
@@ -167,7 +178,7 @@ export async function deleteInventoryItem(id: string) {
 // ── 品質課題 ──
 export async function getQualityIssues(): Promise<QualityIssue[]> {
   const result = await client().retrieveMultipleRecordsAsync<QualityIssueRecord>("geek_qualityissues", {
-    select: ["geek_qualityissueid", "geek_title", "geek_category", "geek_severity", "geek_status", "geek_description"],
+    select: ["geek_qualityissueid", "geek_title", "geek_category", "geek_severity", "geek_status", "geek_description", "_geek_productionorderid_value"],
     orderBy: ["createdon desc"],
   });
   if (!result.success) throw result.error;
@@ -183,13 +194,16 @@ export async function getQualityIssues(): Promise<QualityIssue[]> {
 }
 
 export async function createQualityIssue(data: QualityIssueCreate) {
-  const body = {
+  const body: Record<string, unknown> = {
     geek_title: data.title,
     geek_category: QualityCategoryValues[data.category],
     geek_severity: QualitySeverityValues[data.severity],
     geek_status: QualityStatusValues[data.status],
     geek_description: data.description,
   };
+  if (data.productionOrderId) {
+    body["geek_productionorderid@odata.bind"] = `/geek_productionorders(${data.productionOrderId})`;
+  }
   const result = await client().createRecordAsync<typeof body, QualityIssueRecord>(
     "geek_qualityissues",
     body,
@@ -216,5 +230,69 @@ export async function updateQualityIssue(id: string, data: Partial<QualityIssueC
 
 export async function deleteQualityIssue(id: string) {
   const result = await client().deleteRecordAsync("geek_qualityissues", id);
+  if (!result.success) throw result.error;
+}
+
+// ── 作業者 ──
+export async function getWorkers(): Promise<Worker[]> {
+  const result = await client().retrieveMultipleRecordsAsync<WorkerRecord>("geek_workers", {
+    select: ["geek_workerid", "geek_name"],
+    orderBy: ["geek_name asc"],
+  });
+  if (!result.success) throw result.error;
+  return (result.data ?? []).map((r) => ({
+    id: r.geek_workerid,
+    name: r.geek_name,
+  }));
+}
+
+// ── チェック項目 ──
+export async function getChecklistItems(orderId: string): Promise<ChecklistItem[]> {
+  const result = await client().retrieveMultipleRecordsAsync<ChecklistItemRecord>("geek_checklistitems", {
+    select: ["geek_checklistitemid", "geek_name", "geek_iscompleted", "geek_sequence", "_geek_productionorderid_value"],
+    filter: `_geek_productionorderid_value eq '${orderId}'`,
+    orderBy: ["geek_sequence asc"],
+  });
+  if (!result.success) throw result.error;
+  return (result.data ?? []).map((r) => ({
+    id: r.geek_checklistitemid,
+    name: r.geek_name,
+    isCompleted: r.geek_iscompleted ?? false,
+    sequence: r.geek_sequence ?? 0,
+    productionOrderId: r._geek_productionorderid_value ?? "",
+  }));
+}
+
+export async function createChecklistItem(data: ChecklistItemCreate) {
+  const body: Record<string, unknown> = {
+    geek_name: data.name,
+    geek_iscompleted: data.isCompleted,
+    geek_sequence: data.sequence,
+    "geek_productionorderid@odata.bind": `/geek_productionorders(${data.productionOrderId})`,
+  };
+  const result = await client().createRecordAsync<typeof body, ChecklistItemRecord>(
+    "geek_checklistitems",
+    body,
+  );
+  if (!result.success) throw result.error;
+  return result.data;
+}
+
+export async function updateChecklistItem(id: string, data: Partial<ChecklistItemCreate>) {
+  const body: Record<string, unknown> = {};
+  if (data.name !== undefined) body.geek_name = data.name;
+  if (data.isCompleted !== undefined) body.geek_iscompleted = data.isCompleted;
+  if (data.sequence !== undefined) body.geek_sequence = data.sequence;
+  const result = await client().updateRecordAsync<typeof body, ChecklistItemRecord>(
+    "geek_checklistitems",
+    id,
+    body,
+  );
+  if (!result.success) throw result.error;
+  return result.data;
+}
+
+export async function deleteChecklistItem(id: string) {
+  const result = await client().deleteRecordAsync("geek_checklistitems", id);
   if (!result.success) throw result.error;
 }
