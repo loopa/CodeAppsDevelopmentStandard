@@ -22,6 +22,20 @@ export const dataSourcesInfo = {
     dataSourceType: "Dataverse",
     apis: {},
   },
+  geek_workers: {
+    tableId: "geek_worker",
+    version: "",
+    primaryKey: "geek_workerid",
+    dataSourceType: "Dataverse",
+    apis: {},
+  },
+  geek_checklistitems: {
+    tableId: "geek_checklistitem",
+    version: "",
+    primaryKey: "geek_checklistitemid",
+    dataSourceType: "Dataverse",
+    apis: {},
+  },
   GenerateSalesEmail: {
     tableId: "",
     version: "",
