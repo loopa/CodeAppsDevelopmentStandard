@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   useQualityIssues, useCreateQualityIssue, useUpdateQualityIssue, useDeleteQualityIssue,
+  useProductionOrders,
 } from "@/hooks/use-production";
 import {
   QualityCategoryValues, QualitySeverityValues, QualityStatusValues,
@@ -29,6 +30,12 @@ const SEVERITY_COLORS: Record<QualitySeverity, string> = {
 
 export default function QualityPage() {
   const { data: issues = [], isLoading } = useQualityIssues();
+  const { data: orders = [] } = useProductionOrders();
+  const orderNumberMap = useMemo(() => {
+    const m = new Map<string, string>();
+    orders.forEach((o) => m.set(o.id, o.orderNumber));
+    return m;
+  }, [orders]);
   const createMutation = useCreateQualityIssue();
   const updateMutation = useUpdateQualityIssue();
   const deleteMutation = useDeleteQualityIssue();
@@ -40,6 +47,15 @@ export default function QualityPage() {
 
   const columns: TableColumn<QualityIssue>[] = useMemo(() => [
     { key: "title", label: "タイトル", sortable: true },
+    {
+      key: "productionOrderId", label: "関連指示",
+      render: (item) =>
+        item.productionOrderId ? (
+          <span className="text-xs">{orderNumberMap.get(item.productionOrderId) ?? ""}</span>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        ),
+    },
     { key: "category", label: "カテゴリ" },
     {
       key: "severity", label: "重大度",
@@ -51,7 +67,7 @@ export default function QualityPage() {
       key: "status", label: "ステータス",
       render: (item) => <Badge variant="secondary" className="text-xs">{item.status}</Badge>,
     },
-  ], []);
+  ], [orderNumberMap]);
 
   const filters: FilterConfig<QualityIssue>[] = useMemo(() => [
     {
