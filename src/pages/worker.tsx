@@ -213,7 +213,7 @@ function OrderDetail({ order }: { order: ProductionOrder }) {
           <button
             key={item.id}
             type="button"
-            disabled={updateItem.isPending}
+            disabled={updateItem.isPending || updateOrder.isPending}
             onClick={() => handleToggle(item)}
             className={`w-full flex items-center gap-4 rounded-lg border p-4 text-left transition active:scale-[0.99] ${
               item.isCompleted ? "bg-green-50 dark:bg-green-950/30 border-green-300 dark:border-green-800" : "hover:bg-muted/50"
