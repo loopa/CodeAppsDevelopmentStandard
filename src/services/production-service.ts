@@ -57,6 +57,7 @@ export async function getProductionOrders(): Promise<ProductionOrder[]> {
     productName: r.geek_productname ?? "",
     customerId: r._geek_customerid_value ?? "",
     customer: r._geek_customerid_value ? customerMap.get(r._geek_customerid_value) ?? "" : "",
+    workerId: r._geek_workerid_value ?? "",
     line: r.geek_line ?? "",
     dueDate: r.geek_duedate ?? "",
     quantity: r.geek_quantity ?? 0,
@@ -177,6 +178,7 @@ export async function getQualityIssues(): Promise<QualityIssue[]> {
     severity: QualitySeverityLabels[r.geek_severity ?? 100000000] ?? "軽微",
     status: QualityStatusLabels[r.geek_status ?? 100000000] ?? "未着手",
     description: r.geek_description ?? "",
+    productionOrderId: r._geek_productionorderid_value ?? "",
   }));
 }
 
